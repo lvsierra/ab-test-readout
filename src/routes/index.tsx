@@ -62,6 +62,12 @@ function pp(value: number, decimals = 2): string {
   return `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(decimals)}pp`;
 }
 
+function formatPValue(p: number): string {
+  if (!Number.isFinite(p)) return "—";
+  if (p < 0.0001) return "< 0.0001";
+  return p.toFixed(4);
+}
+
 function signedPct(value: number): string {
   if (!Number.isFinite(value)) return "—";
   const v = value * 100;
@@ -122,6 +128,21 @@ function Index() {
       confidence,
     );
   }, [fields, confidence, errorList.length]);
+
+  const splitBValue = parseCount(splitB);
+  const splitError =
+    splitBValue === null || splitBValue < 1 || splitBValue > 99
+      ? "Enter a whole number between 1 and 99."
+      : null;
+
+  const srm: SrmResult | null = useMemo(() => {
+    if (errorList.length > 0 || splitError) return null;
+    return srmCheck(
+      parseCount(fields.visitorsA)!,
+      parseCount(fields.visitorsB)!,
+      splitBValue! / 100,
+    );
+  }, [fields, splitBValue, splitError, errorList.length]);
 
   const level = `${Math.round(confidence * 100)}%`;
 
