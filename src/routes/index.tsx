@@ -190,6 +190,28 @@ function Index() {
               <span className="text-xs text-faint">Control vs treatment</span>
             </div>
 
+            <button
+              type="button"
+              onClick={loadExample}
+              className="mb-4 w-full rounded-xl bg-white/60 px-3 py-2 text-sm font-medium text-ink ring-1 ring-black/5 transition-colors hover:bg-white/80"
+            >
+              Load real example
+            </button>
+            {exampleLoaded && (
+              <p className="-mt-2 mb-4 text-[11px] leading-relaxed text-faint">
+                Source:{" "}
+                <a
+                  href="https://www.kaggle.com/datasets/faviovaz/marketing-ab-testing"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline underline-offset-2 hover:text-ink"
+                >
+                  Marketing A/B Testing dataset (Kaggle)
+                </a>
+                . Aggregated counts — real public data.
+              </p>
+            )}
+
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <VariantFields
                 title="Variant A"
@@ -211,6 +233,24 @@ function Index() {
                 onVisitors={set("visitorsB")}
                 onConversions={set("conversionsB")}
               />
+            </div>
+
+            <div className="mt-5">
+              <NumberField
+                label="Planned traffic split for B (%)"
+                value={splitB}
+                error={splitError ?? undefined}
+                onChange={(v) => {
+                  setSplitB(v);
+                  setExampleLoaded(false);
+                }}
+              />
+              {exampleLoaded && (
+                <p className="mt-1.5 text-[11px] leading-relaxed text-faint">
+                  This test was deliberately unbalanced (96/4), so an unequal
+                  split alone is not an SRM.
+                </p>
+              )}
             </div>
 
             <div className="mt-5">
