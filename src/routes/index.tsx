@@ -1,7 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
-import { analyzeAbTest, verdictText, type AbResult } from "@/lib/stats";
+import {
+  analyzeAbTest,
+  srmCheck,
+  verdictText,
+  type AbResult,
+  type SrmResult,
+} from "@/lib/stats";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -56,15 +62,36 @@ function pp(value: number, decimals = 2): string {
   return `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(decimals)}pp`;
 }
 
+function formatPValue(p: number): string {
+  if (!Number.isFinite(p)) return "—";
+  if (p < 0.0001) return "< 0.0001";
+  return p.toFixed(4);
+}
+
 function signedPct(value: number): string {
   if (!Number.isFinite(value)) return "—";
   const v = value * 100;
   return `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(2)}%`;
 }
 
+const EXAMPLE: Fields = {
+  visitorsA: "23524",
+  conversionsA: "420",
+  visitorsB: "564577",
+  conversionsB: "14423",
+};
+
 function Index() {
   const [fields, setFields] = useState<Fields>(INITIAL);
   const [confidence, setConfidence] = useState<number>(0.95);
+  const [splitB, setSplitB] = useState("50");
+  const [exampleLoaded, setExampleLoaded] = useState(false);
+
+  const loadExample = () => {
+    setFields(EXAMPLE);
+    setSplitB("96");
+    setExampleLoaded(true);
+  };
 
   const errors = useMemo(() => {
     const e: Partial<Record<FieldKey, string>> = {};
@@ -101,6 +128,21 @@ function Index() {
       confidence,
     );
   }, [fields, confidence, errorList.length]);
+
+  const splitBValue = parseCount(splitB);
+  const splitError =
+    splitBValue === null || splitBValue < 1 || splitBValue > 99
+      ? "Enter a whole number between 1 and 99."
+      : null;
+
+  const srm: SrmResult | null = useMemo(() => {
+    if (errorList.length > 0 || splitError) return null;
+    return srmCheck(
+      parseCount(fields.visitorsA)!,
+      parseCount(fields.visitorsB)!,
+      splitBValue! / 100,
+    );
+  }, [fields, splitBValue, splitError, errorList.length]);
 
   const level = `${Math.round(confidence * 100)}%`;
 
@@ -148,6 +190,28 @@ function Index() {
               <span className="text-xs text-faint">Control vs treatment</span>
             </div>
 
+            <button
+              type="button"
+              onClick={loadExample}
+              className="mb-4 w-full rounded-xl bg-white/60 px-3 py-2 text-sm font-medium text-ink ring-1 ring-black/5 transition-colors hover:bg-white/80"
+            >
+              Load real example
+            </button>
+            {exampleLoaded && (
+              <p className="-mt-2 mb-4 text-[11px] leading-relaxed text-faint">
+                Source:{" "}
+                <a
+                  href="https://www.kaggle.com/datasets/faviovaz/marketing-ab-testing"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline underline-offset-2 hover:text-ink"
+                >
+                  Marketing A/B Testing dataset (Kaggle)
+                </a>
+                . Aggregated counts — real public data.
+              </p>
+            )}
+
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <VariantFields
                 title="Variant A"
@@ -169,6 +233,24 @@ function Index() {
                 onVisitors={set("visitorsB")}
                 onConversions={set("conversionsB")}
               />
+            </div>
+
+            <div className="mt-5">
+              <NumberField
+                label="Planned traffic split for B (%)"
+                value={splitB}
+                error={splitError ?? undefined}
+                onChange={(v) => {
+                  setSplitB(v);
+                  setExampleLoaded(false);
+                }}
+              />
+              {exampleLoaded && (
+                <p className="mt-1.5 text-[11px] leading-relaxed text-faint">
+                  This test was deliberately unbalanced (96/4), so an unequal
+                  split alone is not an SRM.
+                </p>
+              )}
             </div>
 
             <div className="mt-5">
@@ -210,6 +292,23 @@ function Index() {
           <section className="glass rounded-[28px] p-6 sm:p-7 lg:col-span-7">
             {result ? (
               <>
+                {srm &&
+                  (srm.mismatch ? (
+                    <div className="mb-4 rounded-xl bg-destructive/8 px-3.5 py-3 ring-1 ring-destructive/20">
+                      <p className="text-xs font-medium text-destructive">
+                        Sample ratio mismatch detected — the traffic split
+                        differs from the plan. Investigate assignment before
+                        trusting these results.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 ring-1 ring-primary/20">
+                      <span className="size-1.5 rounded-full bg-primary" />
+                      <span className="text-xs font-medium text-primary">
+                        Traffic split looks healthy
+                      </span>
+                    </div>
+                  ))}
                 <div
                   className={`mb-6 rounded-2xl p-5 ring-1 ${
                     result.significant
@@ -257,7 +356,7 @@ function Index() {
                       Two-sided p-value
                     </p>
                     <p className="mt-1 font-display text-lg font-semibold tracking-tight">
-                      {result.pValue.toFixed(4)}
+                      {formatPValue(result.pValue)}
                     </p>
                   </div>
                 </div>

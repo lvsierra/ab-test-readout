@@ -165,6 +165,33 @@ export function analyzeAbTest(
   };
 }
 
+export type SrmResult = {
+  chi2: number;
+  pValue: number;
+  /** True when p < 0.001 — the observed split is inconsistent with the plan. */
+  mismatch: boolean;
+};
+
+/**
+ * Sample ratio mismatch check: chi-square goodness-of-fit (1 df) of the
+ * observed visitor counts against the planned traffic split.
+ * p-value = 2·(1 − Φ(√χ²)), identical to the chi-square(1) survival function.
+ */
+export function srmCheck(
+  visitorsA: number,
+  visitorsB: number,
+  plannedShareB: number,
+): SrmResult {
+  const total = visitorsA + visitorsB;
+  const expectedB = total * plannedShareB;
+  const expectedA = total - expectedB;
+  const chi2 =
+    (visitorsA - expectedA) ** 2 / expectedA +
+    (visitorsB - expectedB) ** 2 / expectedB;
+  const pValue = 2 * (1 - normalCdf(Math.sqrt(chi2)));
+  return { chi2, pValue, mismatch: pValue < 0.001 };
+}
+
 /** Plain-English readout of the result. */
 export function verdictText(result: AbResult): string {
   const level = `${Math.round(result.confidence * 100)}%`;
