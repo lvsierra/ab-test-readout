@@ -292,6 +292,23 @@ function Index() {
           <section className="glass rounded-[28px] p-6 sm:p-7 lg:col-span-7">
             {result ? (
               <>
+                {srm &&
+                  (srm.mismatch ? (
+                    <div className="mb-4 rounded-xl bg-destructive/8 px-3.5 py-3 ring-1 ring-destructive/20">
+                      <p className="text-xs font-medium text-destructive">
+                        Sample ratio mismatch detected — the traffic split
+                        differs from the plan. Investigate assignment before
+                        trusting these results.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 ring-1 ring-primary/20">
+                      <span className="size-1.5 rounded-full bg-primary" />
+                      <span className="text-xs font-medium text-primary">
+                        Traffic split looks healthy
+                      </span>
+                    </div>
+                  ))}
                 <div
                   className={`mb-6 rounded-2xl p-5 ring-1 ${
                     result.significant
@@ -339,7 +356,7 @@ function Index() {
                       Two-sided p-value
                     </p>
                     <p className="mt-1 font-display text-lg font-semibold tracking-tight">
-                      {result.pValue.toFixed(4)}
+                      {formatPValue(result.pValue)}
                     </p>
                   </div>
                 </div>
