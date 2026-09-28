@@ -323,8 +323,8 @@ function VariantFields({
   dotClass: string;
   visitors: string;
   conversions: string;
-  visitorsError?: string;
-  conversionsError?: string;
+  visitorsError?: string | undefined;
+  conversionsError?: string | undefined;
   onVisitors: (v: string) => void;
   onConversions: (v: string) => void;
 }) {
@@ -362,7 +362,7 @@ function NumberField({
 }: {
   label: string;
   value: string;
-  error?: string;
+  error?: string | undefined;
   onChange: (v: string) => void;
 }) {
   return (
