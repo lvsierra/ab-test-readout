@@ -24,7 +24,7 @@ export const Route = createFileRoute("/method")({
   component: MethodPage,
 });
 
-function Formula({ children }: { children: React.ReactNode }) {
+function Formula({ children }: { children: ReactNode }) {
   return (
     <div className="glass-soft overflow-x-auto rounded-xl px-4 py-3 font-mono text-[13px] leading-relaxed text-ink">
       {children}
@@ -37,7 +37,7 @@ function Section({
   children,
 }: {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="mt-8 first:mt-0">
