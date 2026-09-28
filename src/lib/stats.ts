@@ -172,7 +172,5 @@ export function verdictText(result: AbResult): string {
     return `At the ${level} level, this test cannot distinguish the two variants — the data is consistent with B being better, worse, or the same as A.`;
   }
   const direction = result.absoluteDiff > 0 ? "higher" : "lower";
-  const other = result.absoluteDiff > 0 ? "A" : "B";
-  const winner = result.absoluteDiff > 0 ? "B" : "A";
-  return `${winner}'s conversion rate is ${direction} than ${other}'s, and the difference is statistically significant at the ${level} level.`;
+  return `B's conversion rate is ${direction} than A's, and the difference is statistically significant at the ${level} level.`;
 }
