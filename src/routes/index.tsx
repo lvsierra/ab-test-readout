@@ -1,7 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
-import { analyzeAbTest, verdictText, type AbResult } from "@/lib/stats";
+import {
+  analyzeAbTest,
+  srmCheck,
+  verdictText,
+  type AbResult,
+  type SrmResult,
+} from "@/lib/stats";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -62,9 +68,24 @@ function signedPct(value: number): string {
   return `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(2)}%`;
 }
 
+const EXAMPLE: Fields = {
+  visitorsA: "23524",
+  conversionsA: "420",
+  visitorsB: "564577",
+  conversionsB: "14423",
+};
+
 function Index() {
   const [fields, setFields] = useState<Fields>(INITIAL);
   const [confidence, setConfidence] = useState<number>(0.95);
+  const [splitB, setSplitB] = useState("50");
+  const [exampleLoaded, setExampleLoaded] = useState(false);
+
+  const loadExample = () => {
+    setFields(EXAMPLE);
+    setSplitB("96");
+    setExampleLoaded(true);
+  };
 
   const errors = useMemo(() => {
     const e: Partial<Record<FieldKey, string>> = {};
