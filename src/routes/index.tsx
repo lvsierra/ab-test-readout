@@ -174,10 +174,13 @@ function Index() {
               </p>
             </div>
           </div>
-          <span className="hidden items-center gap-2 rounded-full bg-white/50 px-3 py-1.5 text-xs font-medium text-muted-ink ring-1 ring-black/5 sm:inline-flex">
+          <Link
+            to="/method"
+            className="inline-flex items-center gap-2 rounded-full bg-white/50 px-3 py-1.5 text-xs font-medium text-muted-ink ring-1 ring-black/5 transition-colors hover:text-ink"
+          >
             <span className="size-1.5 rounded-full bg-primary" />
-            Method page coming soon
-          </span>
+            Method
+          </Link>
         </header>
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-6">
@@ -399,8 +402,13 @@ function Index() {
 
         <footer className="mt-8 border-t border-line/70 pt-5 text-center text-xs text-faint">
           <p>
-            Built by Laura Sierra · Statistical method explained on the Method
-            page (coming soon)
+            Built by Laura Sierra ·{" "}
+            <Link
+              to="/method"
+              className="underline underline-offset-2 hover:text-ink"
+            >
+              Statistical method explained on the Method page
+            </Link>
           </p>
         </footer>
       </div>
